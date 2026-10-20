@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>manim 플레이그라운드 · 확률과 통계</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{--navy:#1F3A5F;--accent:#E4572E;--teal:#2A9D8F;--gold:#F4A261;--gray:#6B7A90;--line:#D5DCE6;--light:#EEF2F7;--paper:#FBFBF8;--ink:#14213D;--code:#0F1B2D}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;display:flex;flex-direction:column}
+header{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header h1{margin:0;font-size:20px}
+header nav{margin-left:auto;font-size:14px} header a{color:#DDE3EA;text-decoration:none}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff}
+select,.btn{font-family:inherit;font-size:15px}
+select{padding:8px 10px;border-radius:10px;border:2px solid var(--navy)}
+.btn{border:none;background:var(--navy);color:#fff;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer}
+.btn.run{background:var(--accent)} .btn.ghost{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.btn:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+label.chk{font-size:14px;color:var(--gray);display:flex;gap:6px;align-items:center}
+.hint{font-size:13px;color:var(--gray)}
+.main{flex:1;display:grid;grid-template-columns:minmax(0,44fr) minmax(0,56fr);min-height:0}
+.left{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+textarea{flex:1;min-height:260px;resize:none;border:none;background:var(--code);color:#E6EDF6;font:15px/1.6 Consolas,"D2Coding",monospace;padding:16px;tab-size:2;white-space:pre;outline:none}
+#console{background:#081120;color:#9FB3C8;font:13px/1.5 Consolas,monospace;padding:8px 16px;min-height:44px;max-height:120px;overflow:auto;white-space:pre-wrap}
+#console .err{color:#FF8A70}
+.right{display:flex;flex-direction:column;min-height:0;padding:16px;gap:12px;overflow:auto}
+#stageWrap{flex:none;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;aspect-ratio:16/9;width:100%}
+#stage{width:100%;height:100%;display:block}
+details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+summary{font-weight:800;cursor:pointer}
+details table{border-collapse:collapse;font-size:14px;margin-top:8px;width:100%}
+details td{border-top:1px solid var(--line);padding:6px 8px;vertical-align:top}
+details code{font-family:Consolas,monospace;font-size:13px;color:var(--navy);white-space:nowrap}
+.task{background:var(--light);border-radius:12px;padding:10px 14px;font-size:15px;line-height:1.6}
+@media (max-width:860px){.main{grid-template-columns:1fr}.left{border-right:none}textarea{min-height:300px}}
+</style>
+</head>
+<body>
+<header><h1>manim 플레이그라운드</h1><span class="hint" style="color:#C9D3E0">manim 스타일 문법 · 브라우저에서 바로 실행</span>
+<nav><a href="../week01/">1주차 슬라이드</a> · <a href="../week01/quiz.html">퀴즈</a> · <a href="https://github.com/now0831/dlide/blob/main/lectures/week01/anim_scenes.py">실제 manim 코드(Python)</a></nav></header>
+<div class="tools">
+  <select id="ex" aria-label="예제 선택"></select>
+  <button class="btn run" id="run">▶ 실행 (Ctrl+Enter)</button>
+  <button class="btn ghost" id="stop">■ 정지</button>
+  <button class="btn ghost" id="reset">예제 원래대로</button>
+  <select id="speed" aria-label="재생 속도"><option value="0.5">0.5배속</option><option value="1" selected>1배속</option><option value="2">2배속</option></select>
+  <label class="chk"><input type="checkbox" id="grid"> 좌표 격자</label>
+</div>
+<div class="main">
+  <div class="left">
+    <textarea id="code" spellcheck="false" aria-label="코드 편집기"></textarea>
+    <div id="console">준비 완료 · 코드 수정 후 실행</div>
+  </div>
+  <div class="right">
+    <div id="stageWrap"><svg id="stage" viewBox="-640 -360 1280 720" aria-label="애니메이션 화면"></svg></div>
+    <div class="task" id="task"></div>
+    <details open><summary>도구 모음 (manim과 같은 이름)</summary>
+      <table>
+        <tr><td>도형</td><td><code>Circle(r)</code> <code>Square(a)</code> <code>Rect(w,h)</code> <code>Line(p,q)</code> <code>Arrow(p,q)</code> <code>Dot(p)</code> <code>Node("A", 색)</code> <code>Text("글자", {size, color})</code> <code>Group(...)</code></td></tr>
+        <tr><td>옵션</td><td><code>{color: NAVY, fill: TEAL}</code> · 위치 <code>.moveTo([x, y])</code> · 글자 바꾸기 <code>.set("새 글자")</code> · 현재 위치 <code>.pos</code></td></tr>
+        <tr><td>애니메이션</td><td><code>Create</code> <code>FadeIn(m, {shift})</code> <code>FadeOut</code> <code>Write</code> <code>MoveTo(m, p, {arc})</code> <code>Shift(m, [dx,dy])</code> <code>RotateAbout(m, 각, 중심)</code> <code>ScaleTo(m, s)</code> <code>ColorTo(m, 색)</code> <code>Indicate</code> <code>Count(글자, 시작, 끝)</code></td></tr>
+        <tr><td>실행</td><td><code>await play(애니1, 애니2, {run_time: 1, lag: 0.1})</code> · <code>await wait(0.5)</code> · <code>add(m)</code> · <code>log(값)</code></td></tr>
+        <tr><td>좌표·상수</td><td>화면 가로 −8~8, 세로 −4.5~4.5 · <code>ringPos(n, r, 중심)</code> · <code>PI</code> <code>TAU</code> · 색 <code>NAVY ACCENT TEAL GOLD GRAY PURPLE PALETTE[i]</code></td></tr>
+      </table>
+    </details>
+  </div>
+</div>
+<script>
+/* ===== 예제 ===== */
+const EXAMPLES = [
+{ name: '1. 원순열: 회전해도 같은 배열',
+  task: '바꿔 보기: <b>4</b>를 6으로, 글자를 ["A","B","C","D","E","F"]로 · 회전 각도 <code>-PI/2</code>를 <code>-TAU/6</code>으로',
+  code: `// 원 위에 A, B, C, D 배치
+const n = 4;
+const circle = Circle(2, {color: GRAY});
+const pos = ringPos(n, 2);
+const nodes = ["A", "B", "C", "D"].map((ch, i) => Node(ch, PALETTE[i]).moveTo(pos[i]));
+
+const title = Text("회전해도 같은 원형 배열", {size: 44}).moveTo([0, 3.6]);
+await play(Write(title));
+await play(Create(circle));
+await play(...nodes.map(m => FadeIn(m, {shift: [0, 0.5]})), {lag: 0.2});
+
+// 한 칸씩 시계 방향 회전 (글자는 똑바로)
+for (let k = 0; k < n; k++) {
+  await play(RotateAbout(nodes, -PI / 2, [0, 0]));
+  await wait(0.3);
+}
+await play(Indicate(circle));
+const res = Text("일렬 배열 4가지 → 원형 배열 1가지", {size: 34, color: ACCENT}).moveTo([0, -3.6]);
+await play(Write(res));` },
+{ name: '2. 한 자리 고정: (n−1)!',
+  task: '바꿔 보기: 자리 수 <b>5</b>를 6으로 → choices도 [5,4,3,2,1]로 · 결과 글자도 수정',
+  code: `const n = 5;                 // 자리 수
+const R = 2, c0 = [-3, -0.3];
+const circle = Circle(R, {color: GRAY}).moveTo(c0);
+const pos = ringPos(n, R, c0);
+await play(Create(circle));
+
+const A = Node("A", ACCENT).moveTo(pos[0]);
+await play(FadeIn(A, {shift: [0, 0.6]}));
+await play(Indicate(A));
+add(Text("고정", {size: 26, color: ACCENT}).moveTo([pos[0][0], pos[0][1] + 0.75]));
+
+const choices = [4, 3, 2, 1];
+const expr = Text("", {size: 50, color: TEAL}).moveTo([3.3, 0.8]);
+add(expr);
+let s = "";
+for (let i = 0; i < choices.length; i++) {
+  const q = Node("?", GRAY).moveTo(pos[i + 1]);
+  await play(FadeIn(q), {run_time: 0.5});
+  s += (i ? " × " : "") + choices[i];
+  expr.set(s);
+}
+await play(Write(Text("= 4! = 24", {size: 54, color: ACCENT}).moveTo([3.3, -0.5])));` },
+{ name: '3. 중복순열: 비트 채우기 2ʳ',
+  task: '바꿔 보기: <b>n = 8</b>을 4나 10으로 · 2를 10으로 바꾸면 숫자 자물쇠(10ʳ)',
+  code: `const n = 8;                 // 비트 수
+const boxes = [];
+for (let i = 0; i < n; i++) {
+  const x = (i - (n - 1) / 2) * 1.3;
+  boxes.push(Square(1.0, {color: NAVY}).moveTo([x, 1.2]));
+}
+await play(...boxes.map(b => Create(b)), {lag: 0.1});
+
+const cap = Text("가능한 경우의 수", {size: 28, color: GRAY}).moveTo([0, -0.4]);
+const counter = Text("1", {size: 72, color: ACCENT}).moveTo([0, -1.5]);
+await play(FadeIn(cap), FadeIn(counter));
+
+let total = 1;
+for (let i = 0; i < n; i++) {
+  const bit = Math.random() < 0.5 ? "0" : "1";
+  const t = Text(bit, {size: 44, color: NAVY}).moveTo(boxes[i].pos);
+  await play(FadeIn(t, {shift: [0, 0.5]}), Count(counter, total, total * 2), {run_time: 0.5});
+  total *= 2;
+}
+await play(Indicate(counter));
+log("2^" + n + " = " + total);` },
+{ name: '4. 원순열 묶기: 3! ÷ 3',
+  task: '생각해 보기: canon 함수가 하는 일 · 왜 묶음마다 3개씩인지',
+  code: `// A, B, C의 일렬 배열 6가지를 회전 묶음으로
+const perms = ["ABC", "ACB", "BAC", "BCA", "CAB", "CBA"];
+const canon = s => { const i = s.indexOf("A"); return s.slice(i) + s.slice(0, i); };
+const texts = perms.map((s, i) => Text(s, {size: 42}).moveTo([(i - 2.5) * 2.1, 2.6]));
+await play(...texts.map(t => FadeIn(t)), {lag: 0.1});
+await wait(0.5);
+
+const keys = [...new Set(perms.map(canon))];
+const COLS = [ACCENT, TEAL];          // 묶음별 색
+const slot = keys.map(() => 0);
+const anims = [];
+perms.forEach((s, i) => {
+  const g = keys.indexOf(canon(s));
+  anims.push(MoveTo(texts[i], [-4 + slot[g]++ * 2, 0.6 - g * 1.8]));
+  anims.push(ColorTo(texts[i], COLS[g]));
+});
+await play(...anims, {run_time: 1.5});
+for (let g = 0; g < keys.length; g++) {
+  await play(FadeIn(Text("→ 원형 " + (g + 1), {size: 34, color: COLS[g]}).moveTo([3.4, 0.6 - g * 1.8])), {run_time: 0.5});
+}
+await play(Write(Text("3! ÷ 3 = 2", {size: 50, color: ACCENT}).moveTo([0, -3.2])));` },
+{ name: '5. 자유 연습장',
+  task: '도전: 주사위 눈 3개가 차례로 나타나며 6 × 6 × 6 = 216이 완성되는 장면 만들기',
+  code: `// 나만의 애니메이션 · 도구 모음 표 참고
+const dot = Dot([-5, 0], ACCENT);
+const path = Circle(2, {color: GRAY});
+await play(Create(path), FadeIn(dot));
+await play(MoveTo(dot, [5, 0], {arc: PI / 2}), {run_time: 2});
+await play(ScaleTo(dot, 3), ColorTo(dot, TEAL));
+log("완료");` },
+];
+
+/* ===== 엔진 (manim 스타일, SVG) ===== */
+const U = 80, NSS = 'http://www.w3.org/2000/svg';
+const NAVY='#1F3A5F', ACCENT='#E4572E', TEAL='#2A9D8F', GOLD='#F4A261', GRAY='#8D99AE', PURPLE='#9B5DE5', SLATE='#577590', WHITE='#FFFFFF', BLACK='#14213D';
+const PALETTE=[ACCENT, GOLD, NAVY, TEAL, PURPLE, SLATE];
+const svg = document.getElementById('stage');
+let layer, gridLayer, runId = 0, speed = 1;
+const mk = (tag, a={}) => { const e=document.createElementNS(NSS, tag); for (const k in a) e.setAttribute(k, a[k]); return e; };
+class Cancel extends Error {}
+
+function resetStage(){
+  svg.innerHTML='';
+  svg.appendChild(mk('rect',{x:-640,y:-360,width:1280,height:720,fill:'#FFFFFF'}));
+  gridLayer = mk('g'); svg.appendChild(gridLayer); drawGrid();
+  layer = mk('g'); svg.appendChild(layer);
+}
+function drawGrid(){
+  gridLayer.innerHTML='';
+  if (!document.getElementById('grid').checked) return;
+  for (let x=-8; x<=8; x++) gridLayer.appendChild(mk('line',{x1:x*U,y1:-360,x2:x*U,y2:360,stroke:x?'#E6EBF2':'#B8C3D1','stroke-width':x?1:2}));
+  for (let y=-4; y<=4; y++) gridLayer.appendChild(mk('line',{x1:-640,y1:-y*U,x2:640,y2:-y*U,stroke:y?'#E6EBF2':'#B8C3D1','stroke-width':y?1:2}));
+  for (let x=-7; x<=7; x++) if (x) { const t=mk('text',{x:x*U+4,y:16,'font-size':13,fill:'#8D99AE'}); t.textContent=x; gridLayer.appendChild(t); }
+  for (let y=-4; y<=4; y++) if (y) { const t=mk('text',{x:4,y:-y*U-4,'font-size':13,fill:'#8D99AE'}); t.textContent=y; gridLayer.appendChild(t); }
+}
+
+class Mob {
+  constructor(inner){ this.g=mk('g'); if (inner) this.g.appendChild(inner); this.inner=inner; this.x=0; this.y=0; this.rot=0; this.sc=1; this.op=1; this.added=false; this.colorV=null; this.apply(); }
+  apply(){ this.g.setAttribute('transform',`translate(${this.x*U} ${-this.y*U}) rotate(${-this.rot*180/Math.PI}) scale(${this.sc})`); this.g.style.opacity=this.op; return this; }
+  moveTo(p){ this.x=p[0]; this.y=p[1]; return this.apply(); }
+  shift(d){ return this.moveTo([this.x+d[0], this.y+d[1]]); }
+  get pos(){ return [this.x, this.y]; }
+  leaves(){ return [this]; }
+  setColor(c){ this.colorV=c; this.paint(c); return this; }
+  paint(){}
+}
+function ensure(m){ if (!m.added){ layer.appendChild(m.g); m.added=true; } }
+function leavesOf(x){ if (Array.isArray(x)) return x.flatMap(leavesOf); if (!x || !x.leaves) throw new Error('도형이 아닌 값이 애니메이션에 전달됨: '+x); return x.leaves(); }
+
+function shapeOpts(o, defColor){ return {color:o.color||defColor, fill:o.fill||'none', width:o.width||5}; }
+function Circle(r=1, o={}){ const s=shapeOpts(o,NAVY); const c=mk('circle',{r:r*U,stroke:s.color,fill:s.fill,'stroke-width':s.width}); const m=new Mob(c); m.colorV=s.color; m.paint=col=>{ c.setAttribute('stroke',col); if (o.fill) c.setAttribute('fill',col); }; m.drawable=c; return m; }
+function Square(a=1, o={}){ return Rect(a, a, o); }
+function Rect(w=2, h=1, o={}){ const s=shapeOpts(o,NAVY); const r=mk('rect',{x:-w*U/2,y:-h*U/2,width:w*U,height:h*U,rx:10,stroke:s.color,fill:s.fill,'stroke-width':s.width}); const m=new Mob(r); m.colorV=s.color; m.paint=col=>{ r.setAttribute('stroke',col); if (o.fill) r.setAttribute('fill',col); }; m.drawable=r; return m; }
+function Dot(p=[0,0], color=ACCENT, o={}){ const c=mk('circle',{r:(o.r||0.12)*U,fill:color}); const m=new Mob(c).moveTo(p); m.colorV=color; m.paint=col=>c.setAttribute('fill',col); return m; }
+function Line(p=[-1,0], q=[1,0], o={}){ const s=shapeOpts(o,GRAY); const l=mk('line',{x1:p[0]*U,y1:-p[1]*U,x2:q[0]*U,y2:-q[1]*U,stroke:s.color,'stroke-width':s.width,'stroke-linecap':'round'}); const m=new Mob(l); m.colorV=s.color; m.paint=col=>l.setAttribute('stroke',col); m.drawable=l; return m; }
+function Arrow(p=[-1,0], q=[1,0], o={}){
+  const s=shapeOpts(o,ACCENT); const g=mk('g'); const ang=Math.atan2(q[1]-p[1], q[0]-p[0]), hl=0.3;
+  const qq=[q[0]-hl*0.8*Math.cos(ang), q[1]-hl*0.8*Math.sin(ang)];
+  const l=mk('line',{x1:p[0]*U,y1:-p[1]*U,x2:qq[0]*U,y2:-qq[1]*U,stroke:s.color,'stroke-width':s.width});
+  const a1=[q[0]-hl*Math.cos(ang-0.45), q[1]-hl*Math.sin(ang-0.45)], a2=[q[0]-hl*Math.cos(ang+0.45), q[1]-hl*Math.sin(ang+0.45)];
+  const h=mk('polygon',{points:[q,a1,a2].map(v=>`${v[0]*U},${-v[1]*U}`).join(' '),fill:s.color});
+  g.append(l,h); const m=new Mob(g); m.colorV=s.color; m.paint=col=>{ l.setAttribute('stroke',col); h.setAttribute('fill',col); }; m.drawable=l; return m;
+}
+function Text(str='', o={}){
+  const t=mk('text',{'text-anchor':'middle','dominant-baseline':'central','font-size':o.size||36,'font-weight':o.weight||700,fill:o.color||NAVY,'font-family':'Pretendard Variable, Pretendard, Malgun Gothic, sans-serif'});
+  t.textContent=str; const m=new Mob(t); m.str=String(str); m.colorV=o.color||NAVY; m.paint=col=>t.setAttribute('fill',col);
+  m.set=v=>{ m.str=String(v); t.textContent=m.str; return m; }; return m;
+}
+function Node(label='A', color=NAVY, o={}){
+  const r=(o.r||0.42)*U, g=mk('g'), c=mk('circle',{r,fill:color,stroke:'#FFFFFF','stroke-width':4});
+  const t=mk('text',{'text-anchor':'middle','dominant-baseline':'central','font-size':o.size||(String(label).length>1?24:32),'font-weight':800,fill:'#FFFFFF','font-family':'Pretendard Variable, Pretendard, Malgun Gothic, sans-serif'});
+  t.textContent=label; g.append(c,t); const m=new Mob(g); m.colorV=color; m.paint=col=>c.setAttribute('fill',col); return m;
+}
+function Group(...ms){
+  const kids=ms.flat();
+  return { kids, leaves(){ return kids.flatMap(leavesOf); },
+    get pos(){ const L=this.leaves(); return [L.reduce((s,m)=>s+m.x,0)/L.length, L.reduce((s,m)=>s+m.y,0)/L.length]; },
+    moveTo(p){ const c=this.pos; this.leaves().forEach(m=>m.shift([p[0]-c[0], p[1]-c[1]])); return this; },
+    shift(d){ this.leaves().forEach(m=>m.shift(d)); return this; },
+    setColor(c){ this.leaves().forEach(m=>m.setColor(c)); return this; } };
+}
+function add(...ms){ leavesOf(ms).forEach(ensure); }
+function remove(...ms){ leavesOf(ms).forEach(m=>{ m.g.remove(); m.added=false; }); }
+function ringPos(n, r=2, c=[0,0]){ return Array.from({length:n}, (_,i)=>[c[0]+r*Math.cos(Math.PI/2-2*Math.PI*i/n), c[1]+r*Math.sin(Math.PI/2-2*Math.PI*i/n)]); }
+
+/* 색 보간 */
+const hex2rgb=h=>{ h=h.replace('#',''); if (h.length===3) h=h.split('').map(c=>c+c).join(''); return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)); };
+const mixC=(a,b,t)=>{ const A=hex2rgb(a), B=hex2rgb(b); return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join(''); };
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/* 애니메이션: {begin(), update(a)} */
+const anim=(targets, begin, update, end)=>({targets, begin, update, end});
+function FadeIn(m, o={}){ const L=leavesOf(m), sh=o.shift||[0,0]; let st;
+  return anim(L, ()=>{ st=L.map(x=>{ ensure(x); return [x.x,x.y]; }); L.forEach(x=>{ x.op=0; x.apply(); }); },
+    a=>L.forEach((x,i)=>{ x.op=a; x.x=st[i][0]-sh[0]*(1-a); x.y=st[i][1]-sh[1]*(1-a); x.apply(); })); }
+function FadeOut(m){ const L=leavesOf(m); let o0;
+  return anim(L, ()=>{ o0=L.map(x=>x.op); }, a=>L.forEach((x,i)=>{ x.op=o0[i]*(1-a); x.apply(); })); }
+function Create(m){ const L=leavesOf(m); let len;
+  return anim(L, ()=>{ len=L.map(x=>{ ensure(x); if (x.drawable && x.drawable.getTotalLength){ const l=x.drawable.getTotalLength(); x.drawable.style.strokeDasharray=l; x.drawable.style.strokeDashoffset=l; return l; } x.sc0=x.sc; x.sc=0.001; x.apply(); return 0; }); },
+    a=>L.forEach((x,i)=>{ if (len[i]) x.drawable.style.strokeDashoffset=len[i]*(1-a); else { x.sc=Math.max(0.001,x.sc0*a); x.apply(); } }),
+    ()=>L.forEach((x,i)=>{ if (len[i]){ x.drawable.style.strokeDasharray=''; x.drawable.style.strokeDashoffset=''; } })); }
+function Write(m){ const L=leavesOf(m);
+  return anim(L, ()=>L.forEach(x=>{ ensure(x); if (x.set) x.inner.textContent=''; }),
+    a=>L.forEach(x=>{ if (x.set) x.inner.textContent=x.str.slice(0, Math.ceil(a*x.str.length)); else { x.op=a; x.apply(); } })); }
+function MoveTo(m, p, o={}){ const L=leavesOf(m); let st, d;
+  return anim(L, ()=>{ L.forEach(ensure); st=L.map(x=>[x.x,x.y]); const c=m.pos||st[0]; d=[p[0]-c[0], p[1]-c[1]]; },
+    a=>L.forEach((x,i)=>{ let nx=st[i][0]+d[0]*a, ny=st[i][1]+d[1]*a;
+      if (o.arc){ const len=Math.hypot(d[0],d[1])||1, k=Math.sin(Math.PI*a)*Math.tan(o.arc/4)*len/2; nx+=-d[1]/len*k; ny+=d[0]/len*k; }
+      x.x=nx; x.y=ny; x.apply(); })); }
+function Shift(m, d){ const L=leavesOf(m); let st;
+  return anim(L, ()=>{ L.forEach(ensure); st=L.map(x=>[x.x,x.y]); }, a=>L.forEach((x,i)=>{ x.x=st[i][0]+d[0]*a; x.y=st[i][1]+d[1]*a; x.apply(); })); }
+function RotateAbout(m, angle, c=[0,0], o={}){ const L=leavesOf(m), up=o.upright!==false; let st;
+  return anim(L, ()=>{ L.forEach(ensure); st=L.map(x=>[x.x-c[0], x.y-c[1], x.rot]); },
+    a=>L.forEach((x,i)=>{ const t=angle*a, cs=Math.cos(t), sn=Math.sin(t); x.x=c[0]+st[i][0]*cs-st[i][1]*sn; x.y=c[1]+st[i][0]*sn+st[i][1]*cs; if (!up) x.rot=st[i][2]+t; x.apply(); })); }
+function ScaleTo(m, s){ const L=leavesOf(m); let s0;
+  return anim(L, ()=>{ L.forEach(ensure); s0=L.map(x=>x.sc); }, a=>L.forEach((x,i)=>{ x.sc=lerp(s0[i],s,a); x.apply(); })); }
+function ColorTo(m, col){ const L=leavesOf(m); let c0;
+  return anim(L, ()=>{ c0=L.map(x=>x.colorV||NAVY); }, a=>L.forEach((x,i)=>{ x.paint(mixC(c0[i],col,a)); }), ()=>L.forEach(x=>x.colorV=col)); }
+function Indicate(m, o={}){ const L=leavesOf(m), col=o.color||GOLD; let s0, c0;
+  return anim(L, ()=>{ L.forEach(ensure); s0=L.map(x=>x.sc); c0=L.map(x=>x.colorV||NAVY); },
+    a=>L.forEach((x,i)=>{ const k=Math.sin(Math.PI*a); x.sc=s0[i]*(1+0.25*k); x.apply(); x.paint(mixC(c0[i],col,k)); }), ()=>L.forEach((x,i)=>x.paint(c0[i]))); }
+function Count(t, from, to, o={}){ const f=o.format||(v=>Math.round(v).toLocaleString('ko-KR'));
+  return anim([t], ()=>ensure(t), a=>t.set(f(lerp(from,to,a)))); }
+
+const smooth=t=>t*t*(3-2*t);
+function play(...args){
+  const my=runId; let opts={};
+  if (args.length && !args[args.length-1].update && !Array.isArray(args[args.length-1])) opts=args.pop();
+  const list=args.flat(); if (!list.length) return Promise.resolve();
+  list.forEach(a=>{ if (!a || !a.update) throw new Error('play()에는 애니메이션만 전달 가능: Create(m), FadeIn(m) 등'); });
+  const T=(opts.run_time ?? 1)*1000/speed, lag=opts.lag||0, total=T*(1+lag*(list.length-1));
+  const started=list.map(()=>false);
+  return new Promise((res, rej)=>{
+    const t0=performance.now();
+    function frame(now){
+      if (my!==runId) return rej(new Cancel());
+      const el=now-t0;
+      list.forEach((a,i)=>{ const lt=(el-i*lag*T)/T; if (lt<0) return; if (!started[i]){ started[i]=true; a.begin&&a.begin(); } a.update(smooth(Math.min(1,lt))); });
+      if (el>=total){ list.forEach((a,i)=>{ if (!started[i]){ a.begin&&a.begin(); } a.update(1); a.end&&a.end(); }); res(); }
+      else requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
+}
+function wait(s=1){ const my=runId; return new Promise((res,rej)=>setTimeout(()=>my===runId?res():rej(new Cancel()), s*1000/speed)); }
+
+/* ===== UI ===== */
+const $=s=>document.querySelector(s), con=$('#console'), ta=$('#code'), sel=$('#ex');
+function log(...v){ con.insertAdjacentText('beforeend', '\n'+v.map(x=>typeof x==='object'?JSON.stringify(x):String(x)).join(' ')); con.scrollTop=1e9; }
+const API={Circle,Square,Rect,Dot,Line,Arrow,Text,Node,Group,add,remove,ringPos,play,wait,log,FadeIn,FadeOut,Create,Write,MoveTo,Shift,RotateAbout,ScaleTo,ColorTo,Indicate,Count,
+  PI:Math.PI,TAU:2*Math.PI,NAVY,ACCENT,TEAL,GOLD,GRAY,PURPLE,SLATE,WHITE,BLACK,PALETTE,ORIGIN:[0,0],UP:[0,1],DOWN:[0,-1],LEFT:[-1,0],RIGHT:[1,0]};
+const AsyncFn=Object.getPrototypeOf(async function(){}).constructor;
+async function run(){
+  runId++; const my=runId; resetStage(); con.textContent='실행 중…';
+  try {
+    const fn=new AsyncFn(...Object.keys(API), ta.value);
+    await fn(...Object.values(API));
+    if (my===runId) log('✓ 완료');
+  } catch(e){
+    if (e instanceof Cancel) return;
+    const span=document.createElement('span'); span.className='err'; span.textContent='\n오류: '+e.message; con.appendChild(span);
+  }
+}
+EXAMPLES.forEach((e,i)=>sel.add(new Option(e.name, i)));
+const KEY='manim-pg-code-';
+function load(i, fresh){ let saved=null; try{ saved=fresh?null:localStorage.getItem(KEY+i); }catch(e){}
+  ta.value=saved||EXAMPLES[i].code; $('#task').innerHTML='<b>과제</b> · '+EXAMPLES[i].task; run(); }
+sel.onchange=()=>load(+sel.value);
+$('#run').onclick=run;
+$('#stop').onclick=()=>{ runId++; log('■ 정지'); };
+$('#reset').onclick=()=>{ try{ localStorage.removeItem(KEY+sel.value); }catch(e){} load(+sel.value, true); };
+$('#speed').onchange=e=>speed=+e.target.value;
+$('#grid').onchange=drawGrid;
+ta.addEventListener('keydown', e=>{
+  if (e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); run(); }
+  else if (e.key==='Tab'){ e.preventDefault(); const s=ta.selectionStart; ta.setRangeText('  ', s, ta.selectionEnd, 'end'); }
+});
+ta.addEventListener('input', ()=>{ try{ localStorage.setItem(KEY+sel.value, ta.value); }catch(e){} });
+resetStage(); load(0);
+</script>
+</body>
+</html>

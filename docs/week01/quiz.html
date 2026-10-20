@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1주차 퀴즈 · 여러 가지 순열</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{--navy:#1F3A5F;--accent:#E4572E;--teal:#2A9D8F;--gold:#F4A261;--gray:#6B7A90;--line:#D5DCE6;--light:#EEF2F7;--paper:#FBFBF8;--ink:#14213D;--soft:#4A5568}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif}
+header{background:var(--navy);color:#fff;padding:18px 16px}
+header .in{max-width:760px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header a{color:#DDE3EA;text-decoration:none;font-size:15px}
+header h1{margin:0;font-size:22px}
+main{max-width:760px;margin:0 auto;padding:28px 16px 64px}
+.bar{height:8px;background:var(--light);border-radius:99px;overflow:hidden;margin-bottom:8px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;color:var(--gray);font-size:15px;margin-bottom:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px}
+.kind{display:inline-block;font-size:13px;font-weight:800;color:#fff;background:var(--teal);padding:4px 10px;border-radius:99px;margin-bottom:12px}
+.kind.c{background:var(--accent)} .kind.b{background:var(--navy)}
+.q{font-size:22px;font-weight:700;line-height:1.5;margin:0 0 20px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;font-size:19px;padding:14px 16px;border-radius:12px;border:2px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--navy)}
+.opt.sel{border-color:var(--navy);background:var(--light)}
+.opt.right{border-color:var(--teal);background:#E3F4F1}
+.opt.wrong{border-color:var(--accent);background:#FCE9E3}
+input.num{font-size:22px;padding:12px 14px;border:2px solid var(--navy);border-radius:12px;width:220px;font-family:inherit}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px}
+.btn{border:none;background:var(--navy);color:#fff;font-size:18px;font-weight:700;padding:12px 22px;border-radius:12px;cursor:pointer;font-family:inherit}
+.btn.alt{background:var(--accent)} .btn.ghost{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:focus-visible,.opt:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.fb{margin-top:20px;padding:16px 18px;border-radius:12px;font-size:18px;line-height:1.6;display:none}
+.fb.show{display:block}
+.fb.ok{background:#E3F4F1;border-left:6px solid var(--teal)}
+.fb.no{background:#FCE9E3;border-left:6px solid var(--accent)}
+.score{font-size:72px;font-weight:800;color:var(--accent);margin:8px 0}
+.review{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:8px}
+.review li{padding:12px 14px;border-radius:10px;background:var(--light);font-size:16px;line-height:1.5}
+.review b.o{color:var(--teal)} .review b.x{color:var(--accent)}
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.links a{color:var(--navy);font-weight:700}
+</style>
+</head>
+<body>
+<header><div class="in"><h1>1주차 퀴즈 · 여러 가지 순열</h1><nav><a href="./">← 슬라이드</a> · <a href="../playground/">manim 플레이그라운드 →</a></nav></div></header>
+<main>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="meta"><span id="pos">1 / 8</span><span id="pts">맞힌 문제 0</span></div>
+  <div class="card" id="card"></div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const ri = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const fact = n => n<=1 ? 1 : n*fact(n-1);
+const fmt = n => n.toLocaleString('ko-KR');
+const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+const sup = n => String(n).split('').map(d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('');
+
+/* 문제 은행: 매번 숫자가 바뀌는 생성형 문제 */
+const BANK = [
+  () => { const n=ri(4,7); return {kind:'원순열', type:'num', q:`서로 다른 ${n}명이 원탁에 둘러앉는 방법의 수`, a:fact(n-1),
+    ex:`원순열의 수 (n−1)! 적용 → (${n}−1)! = ${n-1}! = ${fmt(fact(n-1))}`}; },
+  () => ({kind:'개념', type:'mc', q:'회전하여 일치하는 배열을 모두 같은 것으로 보는 순열의 이름', opts:['원순열','중복순열','조합','같은 것이 있는 순열'], a:0,
+    ex:'원 모양 배열에서 회전으로 겹치는 배열은 같은 배열 → 원순열'}),
+  () => { const n=pick([3,4,5]), r=ri(3,4), v=n**r;
+    const perm = r<=n ? fact(n)/fact(n-r) : n*(r+1);
+    const opts = uniq([v, perm, n*r, r**n, v+n, v-1]).slice(0,4);
+    return {kind:'중복순열', type:'mc', q:`<sub>${n}</sub>Π<sub>${r}</sub>의 값`, opts, a:0,
+      ex:`<sub>${n}</sub>Π<sub>${r}</sub> = ${n}${sup(r)} = ${fmt(v)} (각 자리 ${n}가지 선택의 ${r}번 반복)`}; },
+  () => { const n=ri(5,7); const v=fact(n-2)*2; return {kind:'원순열 응용', type:'num', q:`서로 다른 ${n}명이 원탁에 앉을 때, 특정한 두 사람이 이웃하는 방법의 수`, a:v,
+    ex:`두 사람을 한 묶음 → ${n-1}개의 원순열 (${n-1}−1)! = ${fmt(fact(n-2))}, 묶음 안 자리 바꿈 2! = 2 → ${fmt(fact(n-2))} × 2 = ${fmt(v)}`}; },
+  () => { const r=ri(4,10); return {kind:'공학 응용', type:'num', q:`${r}비트 이진수(각 자리 0 또는 1)로 나타낼 수 있는 서로 다른 패턴의 수`, a:2**r,
+    ex:`각 비트 2가지, ${r}자리 독립 선택 → 2${sup(r)} = ${fmt(2**r)}`}; },
+  () => ({kind:'개념', type:'mc', q:'n개의 원순열의 수가 n!/n이 되는 이유', opts:['같은 원형 배열이 일렬 배열로 n개씩 중복','원에는 시작점이 n개 더 있음','n개 중 하나는 항상 제외','뒤집으면 같은 배열이 됨'], a:0,
+    ex:'한 원형 배열을 n개의 시작점에서 읽으면 서로 다른 일렬 배열 n개 → n!개를 n개씩 묶은 결과'}),
+  () => { const k=ri(2,4); return {kind:'중복순열', type:'num', q:`주사위 한 개를 ${k}번 던질 때 나오는 눈의 순서쌍의 개수`, a:6**k,
+    ex:`매번 6가지, 같은 눈 반복 가능 → 6${sup(k)} = ${fmt(6**k)}`}; },
+  () => { const n=ri(5,8); return {kind:'비교', type:'num', q:`서로 다른 ${n}개를 일렬로 배열하는 수는 원형으로 배열하는 수의 몇 배인가`, a:n,
+    ex:`n! ÷ (n−1)! = n → ${n}배 (원형 배열 하나가 일렬 배열 ${n}개에 대응)`}; },
+  () => ({kind:'공학 응용', type:'mc', q:'숫자(0~9)만 쓰는 OTP 6자리의 가능한 경우의 수', opts:['10⁶ = 100만','₁₀P₆ = 15만 1200','6¹⁰','10 × 6 = 60'], a:0,
+    ex:'같은 숫자 반복 가능 → 중복순열 10⁶ = 1,000,000 (반복 불가인 순열 ₁₀P₆과 구별)'}),
+  () => { const n=ri(4,6); return {kind:'원순열', type:'num', q:`서로 다른 ${n}가지 색으로 원판을 ${n}등분한 칸을 모두 다르게 칠하는 방법의 수 (회전하여 같은 것은 같은 것으로 봄)`, a:fact(n-1),
+    ex:`회전 동일 → 원순열 (${n}−1)! = ${fmt(fact(n-1))}`}; },
+];
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function uniq(a){ return [...new Set(a)]; }
+
+let qs, i, score, log;
+function start(){
+  qs = shuffle(BANK).slice(0,8).map(f=>f());
+  qs.forEach(q=>{ if(q.type==='mc'){ const right=q.opts[q.a]; q.opts=shuffle(q.opts); q.a=q.opts.indexOf(right); } });
+  i=0; score=0; log=[]; show();
+}
+function show(){
+  const q=qs[i]; $('#bar').style.width=(i/qs.length*100)+'%'; $('#pos').textContent=`${i+1} / ${qs.length}`; $('#pts').textContent=`맞힌 문제 ${score}`;
+  const cls = q.kind.includes('개념')?'b':(q.kind.includes('원순열')?'c':'');
+  let body = `<span class="kind ${cls}">${q.kind}</span><p class="q">${q.q}</p>`;
+  if(q.type==='mc') body += `<div class="opts">${q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${typeof o==='number'?fmt(o):o}</button>`).join('')}</div>`;
+  else body += `<input class="num" id="ans" inputmode="numeric" placeholder="숫자 입력" aria-label="답">`;
+  body += `<div class="row"><button class="btn" id="chk">확인</button><button class="btn alt" id="nxt" style="display:none">${i<qs.length-1?'다음 문제':'결과 보기'}</button></div><div class="fb" id="fb"></div>`;
+  $('#card').innerHTML=body;
+  let sel=null;
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ document.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); sel=+b.dataset.k; });
+  const ans=$('#ans'); if(ans){ ans.focus(); ans.onkeydown=e=>{ if(e.key==='Enter') $('#chk').click(); }; }
+  $('#chk').onclick=()=>{
+    let ok;
+    if(q.type==='mc'){ if(sel===null) return; ok = sel===q.a;
+      document.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; const k=+b.dataset.k; if(k===q.a) b.classList.add('right'); else if(k===sel) b.classList.add('wrong'); }); }
+    else { const v=ans.value.replace(/[,\s]/g,''); if(v==='') return; ok = Number(v)===q.a; ans.disabled=true; }
+    if(ok) score++;
+    log.push({q:q.q, ok, ex:q.ex});
+    const fb=$('#fb'); fb.className='fb show '+(ok?'ok':'no');
+    fb.innerHTML = (ok?'<b>정답</b> · ':`<b>오답</b> · 정답 ${q.type==='mc'?(typeof q.opts[q.a]==='number'?fmt(q.opts[q.a]):q.opts[q.a]):fmt(q.a)} · `) + q.ex;
+    $('#chk').style.display='none'; const n=$('#nxt'); n.style.display=''; n.focus(); $('#pts').textContent=`맞힌 문제 ${score}`;
+  };
+  $('#nxt').onclick=()=>{ i++; i<qs.length ? show() : end(); };
+}
+function end(){
+  $('#bar').style.width='100%'; $('#pos').textContent='완료';
+  const msg = score===qs.length?'완벽한 이해':score>=6?'핵심 개념 이해 완료':score>=4?'원순열·중복순열 구분 복습 필요':'슬라이드와 실험실로 복습 권장';
+  $('#card').innerHTML = `<p class="q" style="margin:0">결과</p><div class="score">${score} / ${qs.length}</div><p style="font-size:20px;margin:0">${msg}</p>
+    <ul class="review">${log.map((l,k)=>`<li><b class="${l.ok?'o':'x'}">${k+1}. ${l.ok?'정답':'오답'}</b> · ${l.q}<br><span style="color:var(--soft)">${l.ex}</span></li>`).join('')}</ul>
+    <div class="row"><button class="btn alt" id="again">새 문제로 다시 풀기</button></div>
+    <div class="links"><a href="./#7">원순열 실험실</a><a href="./#14">비밀번호 공간 계산기</a><a href="../playground/">manim 플레이그라운드</a></div>`;
+  $('#again').onclick=start;
+}
+start();
+</script>
+</body>
+</html>
