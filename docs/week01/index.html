@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>여러 가지 순열 · 확률과 통계 1주차</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --navy:#1F3A5F; --accent:#E4572E; --teal:#2A9D8F; --gold:#F4A261; --gray:#6B7A90;
+  --line:#D5DCE6; --light:#EEF2F7; --paper:#FBFBF8; --ink:#14213D; --soft:#4A5568;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0E1626;font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;color:var(--ink);overflow:hidden}
+button,input,select{font-family:inherit}
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{width:1600px;height:900px;position:relative;transform-origin:center center;flex:none}
+.slide{position:absolute;inset:0;background:var(--paper);padding:64px 88px 80px;display:none;flex-direction:column;overflow:hidden}
+.slide.active{display:flex;animation:fadein .35s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.slide.dark{background:var(--navy);color:#F3F5F8}
+.tag{font-size:20px;font-weight:700;color:var(--accent);letter-spacing:.02em;margin:0 0 6px}
+h1{font-size:84px;margin:0;line-height:1.1;font-weight:800}
+h2{font-size:50px;margin:0 0 28px;line-height:1.15;font-weight:800;color:var(--navy)}
+.dark h2{color:#fff}
+p,li{font-size:27px;line-height:1.5;margin:0}
+ul{margin:0;padding-left:1.1em} li{margin:0 0 14px}
+.row{display:flex;gap:40px;flex:1;min-height:0}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+.grow{flex:1}
+figure{margin:0;display:flex;flex-direction:column;gap:6px;min-height:0}
+figure img,figure video{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block;min-height:0;background:#000}
+figure video.contain{object-fit:contain;background:#fff;border:1px solid var(--line)}
+figcaption{font-size:15px;color:var(--gray)}
+.box{background:var(--light);border:2px solid var(--accent);border-radius:16px;padding:20px 26px}
+.box h3{margin:0 0 8px;font-size:20px;color:var(--accent)}
+.box p{font-size:28px;font-weight:700}
+.box.teal{border-color:var(--teal)} .box.teal h3{color:var(--teal)}
+.box.navy{border-color:var(--navy)} .box.navy h3{color:var(--navy)}
+.badge{position:absolute;right:88px;top:60px;background:var(--gold);color:#fff;font-weight:800;font-size:19px;padding:8px 18px;border-radius:999px}
+.badge.live{background:var(--teal)}
+.footer{position:absolute;left:88px;right:88px;bottom:26px;display:flex;justify-content:space-between;font-size:15px;color:var(--gray)}
+.dark .footer{color:#AFC0D6}
+.btn{border:none;background:var(--navy);color:#fff;font-size:22px;font-weight:700;padding:12px 22px;border-radius:12px;cursor:pointer}
+.btn:hover{filter:brightness(1.15)} .btn:active{transform:translateY(1px)}
+.btn.alt{background:var(--accent)} .btn.ghost{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.big{font-size:64px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.muted{color:var(--soft)}
+.hint{font-size:18px;color:var(--gray)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px}
+/* nav */
+#nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:10px;align-items:center;background:rgba(14,22,38,.82);color:#fff;padding:8px 14px;border-radius:999px;font-size:15px;z-index:10;opacity:.25;transition:opacity .2s}
+#nav:hover,#nav:focus-within{opacity:1}
+#nav button{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 10px}
+#progress{position:fixed;left:0;top:0;height:4px;background:var(--accent);z-index:10;transition:width .3s}
+/* widgets */
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.chip{font-family:Consolas,monospace;font-size:21px;padding:6px 10px;border-radius:8px;background:var(--light);border:2px solid transparent;cursor:pointer;transition:all .25s}
+.chip.hl{border-color:var(--ink);transform:scale(1.08)}
+.grp-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.grp-row .lab{font-size:18px;font-weight:800;margin-left:8px;white-space:nowrap}
+.dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dial .d{width:96px;height:120px;border-radius:14px;background:var(--ink);color:#fff;font-size:72px;font-weight:800;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.dial button{width:96px;font-size:22px;padding:6px;border-radius:10px;border:2px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer;font-weight:800}
+.bit{width:90px;height:90px;border-radius:14px;border:3px solid var(--navy);background:#fff;color:var(--navy);font-size:46px;font-weight:800;cursor:pointer;font-family:Consolas,monospace}
+.bit.on{background:var(--navy);color:#fff}
+.die{width:120px;height:120px;border-radius:22px;background:#fff;border:3px solid var(--ink);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:14px}
+.die i{width:20px;height:20px;border-radius:50%;background:var(--ink);place-self:center;visibility:hidden}
+.die.roll{animation:shake .45s}
+@keyframes shake{25%{transform:rotate(-14deg)}50%{transform:rotate(12deg)}75%{transform:rotate(-6deg)}}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+select{font-size:22px;padding:8px 12px;border-radius:10px;border:2px solid var(--navy)}
+.quiz input{font-size:26px;width:200px;padding:8px 12px;border:2px solid var(--navy);border-radius:10px}
+.ok{color:var(--teal);font-weight:800} .no{color:var(--accent);font-weight:800}
+.step{opacity:.15;transition:opacity .4s} .step.show{opacity:1}
+table.nb{border-collapse:collapse;font-size:22px} table.nb td,table.nb th{border:1px solid var(--line);padding:6px 14px;text-align:center}
+table.nb th{background:var(--light)}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="viewport"><div id="stage">
+
+<!-- 1 표지 -->
+<section class="slide dark" data-title="표지" style="padding:0;flex-direction:row">
+  <div class="col" style="flex:1;justify-content:center;padding:0 88px">
+    <p class="tag" style="color:var(--gold);font-size:24px">확률과 통계 · 1주차</p>
+    <h1>여러 가지 순열</h1>
+    <p style="font-size:32px;color:#DDE3EA;margin-top:12px">원순열과 중복순열</p>
+    <p class="hint" style="color:#AFC0D6;margin-top:48px">→ / Space: 다음 · ←: 이전 · F: 전체 화면</p>
+  </div>
+  <figure style="width:640px;height:100%"><img src="media/carousel.jpg" alt="회전목마" style="border-radius:0"></figure>
+  <div class="footer"><span></span><span style="color:#AFC0D6">사진: Link576 / CC BY 2.0 / flickr</span></div>
+</section>
+
+<!-- 2 인트로 -->
+<section class="slide" data-title="인트로" style="padding:0;background:#000">
+  <video id="intro" src="media/intro.mp4" poster="media/intro_poster.png" controls preload="metadata" playsinline style="width:100%;height:100%;object-fit:cover"></video>
+  <div class="footer" style="color:#C9D3E0"><span>회전해도 변하지 않는 것, 반복해도 되는 것</span><span>AI 생성 영상 · Google Flow (Veo)</span></div>
+</section>
+
+<!-- 3 학습목표 -->
+<section class="slide" data-title="학습목표">
+  <h2>학습목표</h2>
+  <div class="row">
+    <div class="col grow">
+      <ul>
+        <li>원순열의 뜻과 그 수 (n−1)!의 유도</li>
+        <li>중복순열의 뜻과 그 수 nʳ의 계산</li>
+        <li>링 네트워크, 디지털 비밀번호 등 공학 문제에의 적용</li>
+      </ul>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:auto">
+        <div class="box navy"><h3>순열</h3><p>ₙPᵣ = n!/(n−r)!</p></div>
+        <div class="box"><h3>원순열</h3><p>(n−1)!</p></div>
+        <div class="box teal"><h3>중복순열</h3><p>ₙΠᵣ = nʳ</p></div>
+      </div>
+    </div>
+    <figure style="width:520px"><img src="media/ai_goal.jpg" alt="순환 도식을 보며 아이디어를 얻는 학생"><figcaption>AI 생성 이미지 · Google Flow</figcaption></figure>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 4 회전목마 비유 -->
+<section class="slide" data-title="회전목마">
+  <p class="tag">개념 1 · 원순열</p><h2>회전목마의 말 배치</h2><span class="badge">일상 속 비유</span>
+  <div class="row">
+    <figure style="width:760px"><img src="media/carousel.jpg" alt="회전목마"><figcaption>사진: Link576 / CC BY 2.0 / flickr</figcaption></figure>
+    <div class="col grow" style="justify-content:center">
+      <ul>
+        <li>한 바퀴 도는 동안 바뀌는 것: 말의 위치</li>
+        <li>바뀌지 않는 것: 말들의 앞뒤 순서</li>
+        <li>회전만 다른 배치는 같은 배치</li>
+        <li>기준점(시작점)이 없는 배열 = <b>원순열</b></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 5 링 네트워크 (인터랙티브) -->
+<section class="slide" data-title="링 네트워크">
+  <p class="tag">개념 1 · 원순열</p><h2>공학 속 원형 배열: 링 네트워크</h2><span class="badge live">직접 해보기</span>
+  <div class="row">
+    <figure style="width:520px"><img src="media/ai_ring.jpg" alt="공장 설비를 둘러싼 링 형태의 센서 6개"><figcaption>AI 생성 이미지 · Google Flow</figcaption></figure>
+    <div class="col" style="width:360px;align-items:center">
+      <svg id="ringSvg" viewBox="-160 -160 320 320" width="340" height="340" aria-label="센서 6개 링 네트워크"></svg>
+      <div style="display:flex;gap:10px"><button class="btn" id="ringRot">↻ 한 칸 회전</button><button class="btn ghost" id="ringReset">처음</button></div>
+    </div>
+    <div class="col grow">
+      <p class="hint">각 센서의 이웃 (시계 방향 다음 / 이전)</p>
+      <table class="nb" id="ringTable"></table>
+      <p id="ringMsg" style="font-size:24px"></p>
+    </div>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 6 원순열 정의 (영상) -->
+<section class="slide" data-title="원순열 정의">
+  <p class="tag">개념 1 · 원순열</p><h2>원순열: 회전하여 일치하면 같은 배열</h2>
+  <div class="row">
+    <figure style="width:1000px"><video class="contain" src="media/Rotation.mp4" poster="media/Rotation_poster.png" controls preload="none"></video><figcaption>▶ 재생하여 애니메이션 보기</figcaption></figure>
+    <div class="col grow" style="justify-content:center"><div class="box"><h3>원순열의 정의</h3><p>서로 다른 것을 원 모양으로 배열하는 순열</p></div></div>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 7 원순열 실험실 (인터랙티브) -->
+<section class="slide" data-title="원순열 실험실">
+  <p class="tag">개념 1 · 원순열</p><h2>원순열 실험실: n! 을 회전 묶음으로</h2><span class="badge live">직접 해보기</span>
+  <div class="row">
+    <div class="col" style="width:360px">
+      <label class="hint" for="labN">배열할 개수 n</label>
+      <select id="labN"><option>3</option><option selected>4</option><option>5</option></select>
+      <button class="btn alt" id="labGroup">회전 같은 것끼리 묶기</button>
+      <button class="btn ghost" id="labReset">섞인 상태로</button>
+      <div class="panel" style="margin-top:8px">
+        <p class="hint">일렬 배열 n!</p><p class="big" id="labLin" style="font-size:48px">24</p>
+        <p class="hint" style="margin-top:10px">원형 배열 n!/n = (n−1)!</p><p class="big" id="labCirc" style="color:var(--teal);font-size:48px">?</p>
+      </div>
+      <p class="hint">배열을 클릭하면 같은 원형 배열끼리 강조</p>
+    </div>
+    <div class="col grow panel" id="labBox" style="overflow:auto"></div>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 8 원순열 수 유도 (영상) -->
+<section class="slide" data-title="원순열의 수">
+  <p class="tag">개념 1 · 원순열</p><h2>원순열의 수: 일렬 배열 ÷ 회전 중복</h2>
+  <div class="row">
+    <figure style="width:1000px"><video class="contain" src="media/Grouping.mp4" poster="media/Grouping_poster.png" controls preload="none"></video><figcaption>▶ 재생하여 애니메이션 보기</figcaption></figure>
+    <div class="col grow" style="justify-content:center">
+      <ul><li>일렬 배열의 수: n!</li><li>같은 원형 배열: n개씩 중복</li></ul>
+      <div class="box"><h3>원순열의 수</h3><p>n!/n = (n−1)!</p></div>
+    </div>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 9 한 자리 고정 (영상) -->
+<section class="slide" data-title="한 자리 고정">
+  <p class="tag">개념 1 · 원순열</p><h2>다른 관점: 한 자리 고정</h2>
+  <div class="row">
+    <figure style="width:1000px"><video class="contain" src="media/FixedSeat.mp4" poster="media/FixedSeat_poster.png" controls preload="none"></video><figcaption>▶ 재생하여 애니메이션 보기</figcaption></figure>
+    <div class="col grow" style="justify-content:center">
+      <ul><li>회전 자유도 제거를 위한 기준점 고정</li><li>나머지 n−1개의 일렬 배열 문제로 환원</li><li>회전목마의 ‘1번 말’ 지정과 같은 원리</li></ul>
+    </div>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 10 예제 -->
+<section class="slide" data-title="예제">
+  <p class="tag">예제 1</p><h2>예제: 부모가 이웃하는 원형 식탁</h2>
+  <div class="row">
+    <div class="col" style="width:440px">
+      <figure style="height:250px"><img src="media/ai_table.jpg" alt="원탁에 둘러앉은 학생들"><figcaption>AI 생성 이미지 · Google Flow</figcaption></figure>
+      <p>부모를 포함한 6명 가족의 원형 식탁 착석, 부모가 이웃하는 방법의 수</p>
+      <div style="display:flex;gap:10px"><button class="btn alt" id="exNext">풀이 한 단계</button><button class="btn ghost" id="exReset">처음</button></div>
+      <p class="step" data-s="1">① 부모를 한 묶음 → 5개 원순열 (5−1)! = 24</p>
+      <p class="step" data-s="2">② 묶음 안 자리 바꿈 2! = 2</p>
+      <p class="step big" data-s="3" style="font-size:48px">24 × 2 = 48</p>
+    </div>
+    <figure class="grow"><video class="contain" src="media/Example.mp4" poster="media/Example_poster.png" controls preload="none"></video><figcaption>▶ 재생하여 애니메이션 보기</figcaption></figure>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 11 번호 자물쇠 (인터랙티브) -->
+<section class="slide" data-title="번호 자물쇠">
+  <p class="tag">개념 2 · 중복순열</p><h2>번호 자물쇠의 비밀번호</h2><span class="badge live">직접 해보기</span>
+  <div class="row">
+    <figure style="width:520px"><img src="media/lock.jpg" alt="3자리 번호 자물쇠"><figcaption>사진: Reg Natarajan / CC BY 2.0 / flickr</figcaption></figure>
+    <div class="col grow">
+      <div style="display:flex;gap:18px;align-items:center" id="dials"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="lockTry">열기 시도</button>
+        <button class="btn alt" id="lockBrute">000부터 전수 탐색</button>
+        <button class="btn ghost" id="lockNew">새 비밀번호</button>
+      </div>
+      <p id="lockMsg" style="font-size:26px">다이얼을 돌려 비밀번호 맞히기</p>
+      <div class="panel" style="display:flex;gap:40px;align-items:center">
+        <div><p class="hint">시도 횟수</p><p class="big" id="lockCount">0</p></div>
+        <div><p class="hint">가능한 비밀번호</p><p class="big" style="color:var(--teal)">10×10×10 = 1000</p></div>
+      </div>
+      <p class="muted" style="font-size:22px">각 다이얼 0~9의 10가지, 같은 숫자 반복 가능 (예: 777)</p>
+    </div>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 12 중복순열 비트 (인터랙티브 + 영상) -->
+<section class="slide" data-title="중복순열">
+  <p class="tag">개념 2 · 중복순열</p><h2>중복순열: 같은 것의 반복 선택 허용</h2><span class="badge live">직접 해보기</span>
+  <div class="row">
+    <div class="col grow">
+      <div style="display:flex;gap:16px;align-items:center"><span class="hint" style="width:110px">비트 수 r</span><input type="range" id="bitR" min="1" max="8" value="8" style="width:360px"><b id="bitRv" style="font-size:26px">8</b></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap" id="bits"></div>
+      <div class="panel" style="display:flex;gap:44px">
+        <div><p class="hint">지금 패턴 (10진수)</p><p class="big" id="bitVal">0</p></div>
+        <div><p class="hint">가능한 패턴 수 2ʳ</p><p class="big" style="color:var(--teal)" id="bitTot">256</p></div>
+      </div>
+      <div class="box teal"><h3>중복순열의 수</h3><p>서로 다른 n개에서 중복 허용 r개를 택하는 순열: ₙΠᵣ = nʳ</p></div>
+    </div>
+    <figure style="width:560px"><video class="contain" src="media/Bits.mp4" poster="media/Bits_poster.png" controls preload="none"></video><figcaption>▶ 재생하여 애니메이션 보기</figcaption></figure>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 13 주사위 (인터랙티브) -->
+<section class="slide" data-title="주사위">
+  <p class="tag">개념 2 · 중복순열</p><h2>주사위를 세 번 던지기</h2><span class="badge live">직접 해보기</span>
+  <div class="row">
+    <figure style="width:460px"><img src="media/dice.jpg" alt="주사위들"><figcaption>사진: Mak Ting Him / CC BY 2.0 / flickr</figcaption></figure>
+    <div class="col grow">
+      <div style="display:flex;gap:24px" id="dice"></div>
+      <div style="display:flex;gap:10px"><button class="btn alt" id="roll1">한 번 굴리기</button><button class="btn" id="roll100">100번 굴리기</button><button class="btn ghost" id="rollReset">초기화</button></div>
+      <p id="rollLast" style="font-size:26px">순서쌍: –</p>
+      <div class="panel" style="display:flex;gap:44px">
+        <div><p class="hint">굴린 횟수</p><p class="big" id="rollN">0</p></div>
+        <div><p class="hint">나온 서로 다른 순서쌍</p><p class="big" style="color:var(--teal)"><span id="rollSeen">0</span> / 216</p></div>
+      </div>
+      <p class="muted" style="font-size:22px">같은 눈의 반복 가능 → 6 × 6 × 6 = 6³ = 216</p>
+    </div>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 14 비밀번호 공간 (인터랙티브 + 영상) -->
+<section class="slide" data-title="비밀번호 공간">
+  <p class="tag">개념 2 · 중복순열 · 공학 적용</p><h2>비밀번호 공간의 크기</h2><span class="badge live">직접 해보기</span>
+  <div class="row">
+    <div class="col grow">
+      <div style="display:flex;gap:16px;align-items:center">
+        <span class="hint" style="width:110px">문자 종류</span>
+        <select id="pwN"><option value="2">비트 0/1 (2)</option><option value="10" selected>숫자 (10)</option><option value="26">영문 소문자 (26)</option><option value="62">영문 대소문자+숫자 (62)</option><option value="94">키보드 특수문자 포함 (94)</option></select>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center"><span class="hint" style="width:110px">자릿수 r</span><input type="range" id="pwR" min="1" max="16" value="6" style="width:420px"><b id="pwRv" style="font-size:26px">6</b></div>
+      <div class="panel">
+        <p class="hint" id="pwExpr">10⁶</p>
+        <p class="big" id="pwTot">100만</p>
+        <p class="hint" style="margin-top:14px">초당 10억 번 시도할 때 전수 탐색 시간</p>
+        <p style="font-size:34px;font-weight:800;color:var(--navy)" id="pwTime">0.001초</p>
+      </div>
+      <figure style="height:170px;width:300px"><img src="media/ai_otp.jpg" alt="스마트폰 OTP 화면과 OTP 토큰"><figcaption>AI 생성 이미지 · Google Flow</figcaption></figure>
+    </div>
+    <figure style="width:640px"><video class="contain" src="media/Growth.mp4" poster="media/Growth_poster.png" controls preload="none"></video><figcaption>▶ 재생하여 애니메이션 보기</figcaption></figure>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 15 정리 -->
+<section class="slide" data-title="정리">
+  <h2>정리: 세 가지 순열 비교</h2>
+  <div class="row">
+    <div class="col grow">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+        <div class="box navy"><h3>순열</h3><p>ₙPᵣ = n!/(n−r)!</p><p class="muted" style="font-size:20px;font-weight:400">서로 다른 것, 일렬</p></div>
+        <div class="box"><h3>원순열</h3><p>(n−1)!</p><p class="muted" style="font-size:20px;font-weight:400">회전하면 같은 것</p></div>
+        <div class="box teal"><h3>중복순열</h3><p>ₙΠᵣ = nʳ</p><p class="muted" style="font-size:20px;font-weight:400">같은 것 반복 허용</p></div>
+      </div>
+      <ul style="margin-top:20px">
+        <li>원순열: 회전하여 같은 것 제거 → n으로 나눔</li>
+        <li>중복순열: 각 자리의 독립적 선택 → n을 r번 곱함</li>
+      </ul>
+    </div>
+    <figure style="width:420px;height:300px"><img src="media/ai_dice.jpg" alt="공중에서 구르는 주사위 세 개"><figcaption>AI 생성 이미지 · Google Flow</figcaption></figure>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+<!-- 16 확인 문제 (인터랙티브) -->
+<section class="slide" data-title="확인 문제">
+  <h2>확인 문제</h2><span class="badge live">직접 해보기</span>
+  <div class="row">
+    <figure style="width:460px"><img src="media/ferris.jpg" alt="관람차"><figcaption>사진: Feltkamp / CC BY 2.0 / flickr</figcaption></figure>
+    <div class="col grow quiz">
+      <div class="box navy"><h3>문제 1 · 원순열</h3><p>서로 다른 8색으로 관람차 8칸 색칠하는 방법의 수</p>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:12px"><input id="q1" inputmode="numeric" aria-label="문제 1 답"><button class="btn" data-q="q1" data-a="5040" data-h="(8−1)! = 7! = 5040">확인</button><span id="q1m"></span></div></div>
+      <div class="box teal"><h3>문제 2 · 중복순열</h3><p>0~9 숫자 4자리 PIN의 개수</p>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:12px"><input id="q2" inputmode="numeric" aria-label="문제 2 답"><button class="btn" data-q="q2" data-a="10000" data-h="₁₀Π₄ = 10⁴ = 10000">확인</button><span id="q2m"></span></div></div>
+    </div>
+  </div>
+  <div class="footer"><span>확률과 통계 · 1주차</span><span class="pg"></span></div>
+</section>
+
+</div></div>
+
+<div id="nav"><button id="prev" aria-label="이전 슬라이드">‹</button><span id="count">1 / 16</span><button id="next" aria-label="다음 슬라이드">›</button><button id="fs" aria-label="전체 화면">⛶</button></div>
+
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const slides = $$('.slide'); let cur = 0;
+const stage = $('#stage');
+function fit(){ const s = Math.min(innerWidth/1600, innerHeight/900); stage.style.transform = `scale(${s})`; }
+addEventListener('resize', fit); fit();
+slides.forEach((s,i)=>{ const p=s.querySelector('.pg'); if(p) p.textContent = (i+1); });
+function go(i){
+  i = Math.max(0, Math.min(slides.length-1, i));
+  slides[cur].querySelectorAll('video').forEach(v=>v.pause());
+  slides[cur].classList.remove('active'); cur = i; slides[cur].classList.add('active');
+  $('#count').textContent = `${cur+1} / ${slides.length}`;
+  $('#progress').style.width = ((cur+1)/slides.length*100)+'%';
+  history.replaceState(null,'','#'+(cur+1));
+}
+addEventListener('keydown', e=>{
+  if (e.target.matches('input,select,textarea')) return;
+  if (['ArrowRight','PageDown',' '].includes(e.key)) { e.preventDefault(); go(cur+1); }
+  else if (['ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); go(cur-1); }
+  else if (e.key==='Home') go(0); else if (e.key==='End') go(slides.length-1);
+  else if (e.key==='f'||e.key==='F') toggleFs();
+});
+function toggleFs(){ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); }
+$('#prev').onclick=()=>go(cur-1); $('#next').onclick=()=>go(cur+1); $('#fs').onclick=toggleFs;
+let tx=null; addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+addEventListener('touchend',e=>{ if(tx===null) return; const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>60) go(cur+(d<0?1:-1)); tx=null; });
+go(Math.max(0, (parseInt(location.hash.slice(1))||1)-1));
+
+const PAL = ['#E4572E','#F4A261','#1F3A5F','#2A9D8F','#9B5DE5','#577590'];
+
+/* 링 네트워크 */
+(()=>{
+  const svg=$('#ringSvg'), names=['S1','S2','S3','S4','S5','S6'], R=115; let k=0;
+  const NS='http://www.w3.org/2000/svg';
+  const ring=document.createElementNS(NS,'circle'); ring.setAttribute('r',R); ring.setAttribute('fill','none'); ring.setAttribute('stroke','#8D99AE'); ring.setAttribute('stroke-width','5'); svg.appendChild(ring);
+  const g=document.createElementNS(NS,'g'); g.style.transition='transform .6s ease'; svg.appendChild(g);
+  const labels=[];
+  names.forEach((n,i)=>{ const a=-Math.PI/2+i*Math.PI/3, x=R*Math.cos(a), y=R*Math.sin(a);
+    const c=document.createElementNS(NS,'circle'); c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',30); c.setAttribute('fill',PAL[i]); g.appendChild(c);
+    const t=document.createElementNS(NS,'text'); t.setAttribute('x',x); t.setAttribute('y',y+7); t.setAttribute('text-anchor','middle'); t.setAttribute('fill','#fff'); t.setAttribute('font-size','20'); t.setAttribute('font-weight','800'); t.textContent=n; t.style.transformBox='fill-box'; t.style.transformOrigin='center'; t.style.transition='transform .6s ease'; g.appendChild(t); labels.push(t); });
+  const tb=$('#ringTable');
+  tb.innerHTML='<tr><th>센서</th><th>다음</th><th>이전</th></tr>'+names.map((n,i)=>`<tr><td><b style="color:${PAL[i]}">${n}</b></td><td>${names[(i+1)%6]}</td><td>${names[(i+5)%6]}</td></tr>`).join('');
+  function upd(){ g.style.transform=`rotate(${k*60}deg)`; labels.forEach(t=>t.style.transform=`rotate(${-k*60}deg)`);
+    $('#ringMsg').innerHTML = k===0 ? '회전 버튼으로 링 전체 회전' : `${k}칸 회전 · 위치는 바뀜, <b class="ok">이웃 관계는 그대로</b> → 같은 배치`; }
+  $('#ringRot').onclick=()=>{k++; upd();}; $('#ringReset').onclick=()=>{k=0; upd();}; upd();
+})();
+
+/* 원순열 실험실 */
+(()=>{
+  const box=$('#labBox'); let grouped=false;
+  const perms = a => a.length<=1 ? [a] : a.flatMap((x,i)=>perms([...a.slice(0,i),...a.slice(i+1)]).map(p=>[x,...p]));
+  const canon = s => { const i=s.indexOf('A'); return s.slice(i)+s.slice(0,i); };
+  const fact = n => n<=1?1:n*fact(n-1);
+  function render(){
+    const n=+$('#labN').value, letters='ABCDE'.slice(0,n).split('');
+    const all=perms(letters).map(p=>p.join('')), keys=[...new Set(all.map(canon))];
+    const col = s => PAL[keys.indexOf(canon(s)) % PAL.length];
+    $('#labLin').textContent = `${n}! = ${fact(n)}`;
+    $('#labCirc').textContent = grouped ? `${fact(n)} ÷ ${n} = ${fact(n-1)}` : '?';
+    box.innerHTML='';
+    if(!grouped){
+      const wrap=document.createElement('div'); wrap.className='chips';
+      [...all].sort(()=>Math.random()-.5).forEach(s=>wrap.appendChild(chip(s,grouped?col(s):null)));
+      box.appendChild(wrap);
+    } else {
+      keys.forEach((k,gi)=>{ const row=document.createElement('div'); row.className='grp-row';
+        all.filter(s=>canon(s)===k).forEach(s=>row.appendChild(chip(s,col(s))));
+        const lab=document.createElement('span'); lab.className='lab'; lab.style.color=PAL[gi%PAL.length]; lab.textContent=`→ 원형 ${gi+1}`; row.appendChild(lab); box.appendChild(row); });
+    }
+    function chip(s,c){ const b=document.createElement('button'); b.className='chip'; b.textContent=s; b.dataset.k=canon(s);
+      if(c){ b.style.background=c+'26'; b.style.color = c==='#F4A261' ? '#A65A12' : c; }
+      b.onclick=()=>{ box.querySelectorAll('.chip').forEach(x=>x.classList.toggle('hl', x.dataset.k===b.dataset.k)); };
+      return b; }
+  }
+  $('#labN').onchange=()=>{grouped=false; render();};
+  $('#labGroup').onclick=()=>{grouped=true; render();};
+  $('#labReset').onclick=()=>{grouped=false; render();};
+  render();
+})();
+
+/* 예제 단계 풀이 */
+(()=>{ let s=0; const upd=()=>$$('#stage .step').forEach(e=>e.classList.toggle('show', +e.dataset.s<=s));
+  $('#exNext').onclick=()=>{s=Math.min(3,s+1); upd();}; $('#exReset').onclick=()=>{s=0; upd();}; upd(); })();
+
+/* 번호 자물쇠 */
+(()=>{
+  let code, val=[0,0,0], tries=0, timer=null; const host=$('#dials');
+  const rnd=()=>[0,1,2].map(()=>Math.floor(Math.random()*10));
+  host.innerHTML=[0,1,2].map(i=>`<div class="dial"><button data-i="${i}" data-d="1" aria-label="${i+1}번 다이얼 올리기">▲</button><div class="d" id="d${i}">0</div><button data-i="${i}" data-d="-1" aria-label="${i+1}번 다이얼 내리기">▼</button></div>`).join('');
+  host.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; val[i]=(val[i]+ +b.dataset.d+10)%10; show(); });
+  const show=()=>{ val.forEach((v,i)=>$('#d'+i).textContent=v); $('#lockCount').textContent=tries; };
+  const check=()=>{ tries++; const ok=val.join('')===code.join(''); $('#lockMsg').innerHTML = ok ? `<span class="ok">열림! 비밀번호 ${code.join('')}</span>` : `<span class="no">${val.join('')}: 실패</span>`; show(); return ok; };
+  const reset=()=>{ clearInterval(timer); timer=null; code=rnd(); val=[0,0,0]; tries=0; $('#lockMsg').textContent='다이얼을 돌려 비밀번호 맞히기'; show(); };
+  $('#lockTry').onclick=()=>{ if(!timer) check(); };
+  $('#lockBrute').onclick=()=>{ if(timer) return; val=[0,0,0]; tries=0; let n=0;
+    timer=setInterval(()=>{ for(let k=0;k<7;k++){ val=String(n).padStart(3,'0').split('').map(Number); if(check()){ clearInterval(timer); timer=null; return; } n++; } },16); };
+  $('#lockNew').onclick=reset; reset();
+})();
+
+/* 비트 */
+(()=>{
+  let bits=Array(8).fill(0);
+  function render(){ const r=+$('#bitR').value; $('#bitRv').textContent=r; bits=bits.slice(0,r).concat(Array(Math.max(0,r-bits.length)).fill(0));
+    const host=$('#bits'); host.innerHTML=''; bits.forEach((b,i)=>{ const e=document.createElement('button'); e.className='bit'+(b?' on':''); e.textContent=b; e.setAttribute('aria-label',`${i+1}번째 비트`); e.onclick=()=>{bits[i]^=1; render();}; host.appendChild(e); });
+    $('#bitVal').textContent=parseInt(bits.join('')||'0',2); $('#bitTot').textContent=`2^${r} = ${2**r}`.replace('^'+r, sup(r)); }
+  $('#bitR').oninput=render; render();
+})();
+function sup(n){ return String(n).split('').map(d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join(''); }
+
+/* 주사위 */
+(()=>{
+  const P={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+  const host=$('#dice'); host.innerHTML=[0,1,2].map(i=>`<div class="die" id="die${i}" role="img" aria-label="주사위">${'<i></i>'.repeat(9)}</div>`).join('');
+  let n=0, seen=new Set();
+  const face=(i,v)=>{ const d=$('#die'+i); d.setAttribute('aria-label',`주사위 ${v}`); [...d.children].forEach((p,k)=>p.style.visibility=P[v].includes(k)?'visible':'hidden'); };
+  const roll=()=>{ const r=[0,1,2].map(()=>1+Math.floor(Math.random()*6)); n++; seen.add(r.join('-')); return r; };
+  const show=r=>{ r.forEach((v,i)=>face(i,v)); $('#rollLast').textContent=`순서쌍: (${r.join(', ')})`; $('#rollN').textContent=n; $('#rollSeen').textContent=seen.size; };
+  $('#roll1').onclick=()=>{ $$('.die').forEach(d=>{d.classList.remove('roll'); void d.offsetWidth; d.classList.add('roll');}); show(roll()); };
+  $('#roll100').onclick=()=>{ let r; for(let k=0;k<100;k++) r=roll(); show(r); };
+  $('#rollReset').onclick=()=>{ n=0; seen=new Set(); [1,1,1].forEach((v,i)=>face(i,v)); $('#rollLast').textContent='순서쌍: –'; $('#rollN').textContent=0; $('#rollSeen').textContent=0; };
+  [1,1,1].forEach((v,i)=>face(i,v));
+})();
+
+/* 비밀번호 공간 */
+(()=>{
+  const units=[['해',20],['경',16],['조',12],['억',8],['만',4]];
+  function kr(x){ if(x<1e4) return x.toLocaleString('ko-KR'); for(const [u,e] of units){ if(x>=10**e){ const v=x/10**e; return (v>=1000? Math.round(v).toLocaleString('ko-KR') : +v.toPrecision(3))+u; } } }
+  function dur(s){ const t=[['년',31557600],['일',86400],['시간',3600],['분',60]];
+    if(s<1) return +s.toPrecision(2)+'초'; for(const [u,v] of t){ if(s>=v){ const q=s/v; if(u==='년'&&q>=1e4) return '약 '+kr(q)+' 년'; return '약 '+(+q.toPrecision(3)).toLocaleString('ko-KR')+u; } } return +s.toPrecision(3)+'초'; }
+  function upd(){ const n=+$('#pwN').value, r=+$('#pwR').value, tot=n**r; $('#pwRv').textContent=r;
+    $('#pwExpr').textContent=`${n}${sup(r)} = ${n}를 ${r}번 곱한 수`; $('#pwTot').textContent=kr(tot); $('#pwTime').textContent=dur(tot/1e9); }
+  $('#pwN').onchange=upd; $('#pwR').oninput=upd; upd();
+})();
+
+/* 확인 문제 */
+$$('.quiz button[data-q]').forEach(b=>b.onclick=()=>{ const v=$('#'+b.dataset.q).value.replace(/[,\s]/g,''); const m=$('#'+b.dataset.q+'m');
+  m.innerHTML = v===b.dataset.a ? `<span class="ok">정답 · ${b.dataset.h}</span>` : `<span class="no">다시 생각해 보기</span>`; });
+$$('.quiz input').forEach(i=>i.addEventListener('keydown',e=>{ if(e.key==='Enter') i.nextElementSibling.click(); }));
+</script>
+</body>
+</html>

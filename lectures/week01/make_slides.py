@@ -89,7 +89,7 @@ def crop_to(name, w, h):
         nw = int(H * target); box = ((W - nw) // 2, 0, (W - nw) // 2 + nw, H)
     else:
         nh = int(W / target); box = (0, (H - nh) // 2, W, (H - nh) // 2 + nh)
-    p = os.path.join(FIG, f"crop_{w:.1f}x{h:.1f}_{name}")
+    p = os.path.join(FIG, f"crop_{w:.1f}x{h:.1f}_{os.path.basename(name)}")
     im.crop(box).save(p, quality=90)
     return p
 
@@ -182,12 +182,22 @@ text(s, 0.9, 2.9, 6, 1.2, "여러 가지 순열", size=48, color="#FFFFFF", bold
 text(s, 0.9, 4.1, 6, 0.6, "원순열과 중복순열", size=24, color="#DDE3EA")
 pic(s, crop_to("비유_회전목마.jpg", 5.6, 7.5), 7.733, 0, 5.6, 7.5)
 
-# 2 학습목표
+# 2 인트로 영상 (AI 생성, 전체 화면)
+s = new()
+bg = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, prs.slide_height)
+bg.fill.solid(); bg.fill.fore_color.rgb = rgb("#000000"); bg.line.fill.background()
+s.shapes.add_movie(os.path.join(IMG, "ai_flow", "intro_회전목마_자물쇠.mp4"), 0, 0, prs.slide_width, prs.slide_height,
+                   poster_frame_image=os.path.join(IMG, "ai_flow", "intro_poster.png"), mime_type="video/mp4")
+text(s, 0.4, 7.05, 8, 0.3, "▶ 클릭하여 재생 · " + CREDITS["ai_flow/intro_회전목마_자물쇠.mp4"], size=10, color="#DDE3EA")
+s.notes_slide.notes_text_frame.text = "도입 질문\n회전목마가 돌아도 변하지 않는 것: 말들의 순서\n자물쇠 다이얼: 같은 숫자의 반복 가능\n→ 오늘의 두 주제, 원순열과 중복순열"
+
+# 3 학습목표
 s = new(); header(s, "학습목표"); footer(s, n)
-bullets(s, 0.8, 1.9, 11, 2.4, ["원순열의 뜻과 그 수 (n−1)!의 유도",
-                               "중복순열의 뜻과 그 수 nʳ의 계산",
-                               "링 네트워크, 디지털 비밀번호 등 공학 문제에의 적용"], size=24)
-pic(s, figs["summary"], 0.8, 4.4, w=8.5)
+bullets(s, 0.8, 1.9, 7.4, 2.4, ["원순열의 뜻과 그 수 (n−1)!의 유도",
+                                "중복순열의 뜻과 그 수 nʳ의 계산",
+                                "링 네트워크, 디지털 비밀번호 등 공학 문제에의 적용"], size=20)
+photo(s, "ai_flow/AI_학습목표.jpg", 8.5, 1.6, 4.3, 2.4)
+pic(s, figs["summary"], 0.8, 4.3, w=8.2)
 
 # 3 비유: 회전목마
 s = new(); header(s, "회전목마의 말 배치", "개념 1 · 원순열"); analogy_tag(s); footer(s, n)
@@ -199,11 +209,12 @@ bullets(s, 7.5, 1.9, 5.5, 4.5, ["회전목마가 한 바퀴 도는 동안 바뀌
 
 # 4 동기: 링 네트워크
 s = new(); header(s, "공학 속 원형 배열: 링 네트워크", "개념 1 · 원순열"); footer(s, n)
-pic(s, figs["ring"], 0.7, 1.6, h=5.2)
-bullets(s, 6.4, 2.0, 6.6, 4, ["센서 6개를 원형 통신 링에 연결하는 상황",
-                             "전체 회전 시에도 이웃 관계는 동일",
-                             "회전만 다른 배치는 같은 배치로 취급",
-                             "핵심 질문: 서로 다른 배치의 개수"], size=22)
+photo(s, "ai_flow/AI_링센서.jpg", 0.6, 1.6, 6.6, 3.7)
+bullets(s, 7.5, 1.8, 5.5, 2.8, ["센서 6개를 원형 통신 링에 연결하는 상황",
+                                "전체 회전 시에도 이웃 관계는 동일",
+                                "회전만 다른 배치는 같은 배치로 취급",
+                                "핵심 질문: 서로 다른 배치의 개수"], size=18)
+pic(s, figs["ring"], 9.4, 4.4, h=2.5)
 
 # 5 원순열 정의 (애니)
 s = new(); header(s, "원순열: 회전하여 일치하면 같은 배열", "개념 1 · 원순열"); footer(s, n)
@@ -225,7 +236,7 @@ bullets(s, 9.3, 1.8, 3.7, 4.5, ["회전 자유도 제거를 위한 기준점 고
 
 # 8 예제 (사진 + 애니)
 s = new(); header(s, "예제: 부모가 이웃하는 원형 식탁", "예제 1"); footer(s, n)
-photo(s, "비유_원형식탁.jpg", 0.6, 1.6, 3.9, 2.9)
+photo(s, "ai_flow/AI_원탁토론.jpg", 0.6, 1.6, 3.9, 2.9)
 text(s, 0.6, 4.9, 3.9, 1.8, ["부모를 포함한 6명 가족", "원형 식탁 착석", "부모가 이웃하는 방법의 수"], size=17, color=NAVY)
 movie(s, "Example", 4.8, 1.5, 8.0)
 
@@ -253,15 +264,17 @@ bullets(s, 7.5, 1.9, 5.5, 4.5, ["주사위 1번: 6가지 눈",
 # 12 공학 적용 (애니)
 s = new(); header(s, "공학 적용: 비밀번호 공간의 크기", "개념 2 · 중복순열"); footer(s, n)
 movie(s, "Growth", 0.6, 1.5, 8.4)
-bullets(s, 9.3, 1.8, 3.8, 4.5, ["OTP 6자리 숫자: 10⁶ = 100만",
+bullets(s, 9.3, 1.5, 3.8, 2.8, ["OTP 6자리 숫자: 10⁶ = 100만",
                                 "8비트: 2⁸ = 256",
                                 "영문+숫자 8자리: 62⁸ ≈ 2.2×10¹⁴",
-                                "자릿수 증가에 따른 지수적 증가"], size=18)
+                                "자릿수 증가에 따른 지수적 증가"], size=15)
+photo(s, "ai_flow/AI_OTP.jpg", 9.3, 4.5, 3.6, 2.0)
 
 # 13 요약
 s = new(); header(s, "정리: 세 가지 순열 비교"); footer(s, n)
-pic(s, figs["summary"], 0.8, 1.7, w=11.7)
-bullets(s, 0.8, 5.4, 12, 1.5, ["원순열: 회전하여 같은 것 제거 → n으로 나눔",
+pic(s, figs["summary"], 0.6, 1.7, w=8.3)
+photo(s, "ai_flow/AI_주사위.jpg", 9.2, 1.7, 3.6, 2.4)
+bullets(s, 0.8, 4.9, 12, 1.5, ["원순열: 회전하여 같은 것 제거 → n으로 나눔",
                                "중복순열: 각 자리의 독립적 선택 → n을 r번 곱함"], size=20)
 
 # 14 확인 문제
