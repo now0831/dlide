@@ -1,0 +1,11 @@
+# 저작권 자료: 교과서 원본은 올리지 않음
+01_source/교재/
+
+# 생성물, 캐시
+__pycache__/
+*.pyc
+media/
+lectures/*/fig/
+
+# Office 임시 파일
+~$*
