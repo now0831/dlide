@@ -4,7 +4,7 @@
 # 생성물, 캐시
 __pycache__/
 *.pyc
-media/
+/media/
 lectures/*/fig/
 
 # Office 임시 파일
